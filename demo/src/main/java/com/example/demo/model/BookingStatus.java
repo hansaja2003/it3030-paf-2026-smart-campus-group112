@@ -1,5 +1,8 @@
 package com.example.demo.model;
 
-public class BookingStatus {
-
+public enum BookingStatus {
+    PENDING,
+    APPROVED,
+    REJECTED,
+    CANCELLED
 }
