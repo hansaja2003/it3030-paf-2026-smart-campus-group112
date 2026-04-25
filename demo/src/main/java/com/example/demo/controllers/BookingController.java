@@ -1,19 +1,29 @@
 package com.example.demo.controllers;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.demo.dto.BookingDTO;
 import com.example.demo.model.Booking;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.BookingService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -23,7 +33,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final UserRepository userRepository;
 
-    @PostMapping
+    @PostMapping//create booking
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER')")
     public ResponseEntity<?> createBooking(@RequestBody BookingDTO dto, Authentication auth) {
         try {
@@ -35,7 +45,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/my")
+    @GetMapping("/my")//get my bookings
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER')")
     public ResponseEntity<?> getMyBookings(Authentication auth) {
         User user = getUserFromAuth(auth);
@@ -43,14 +53,14 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/pending")
+    @GetMapping("/pending")//get pending bookings for manager/admin
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> getPendingBookings() {
         List<Booking> bookings = bookingService.getPendingBookings();
         return ResponseEntity.ok(bookings);
     }
 
-    @PutMapping("/{id}/approve")
+    @PutMapping("/{id}/approve")//approve booking
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> approveBooking(@PathVariable Long id) {
         try {
@@ -64,7 +74,7 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{id}/reject")
+    @PutMapping("/{id}/reject")//reject booking
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> rejectBooking(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
@@ -79,7 +89,7 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{id}/cancel")
+    @PutMapping("/{id}/cancel")//cancel booking
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<?> cancelBooking(@PathVariable Long id, Authentication auth) {
         try {
@@ -108,7 +118,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/check-availability")
+    @GetMapping("/check-availability")//check availability for a facility
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<?> checkAvailability(
             @RequestParam Long facilityId,
@@ -128,14 +138,14 @@ public class BookingController {
         ));
     }
 
-    @GetMapping("/all")
+    @GetMapping("/all")//get all bookings for admin
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllBookings() {
         List<Booking> bookings = bookingService.getAllBookings();
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/stats")
+    @GetMapping("/stats")//get booking statistics for manager/admin
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> getBookingStats() {
         Map<String, Object> stats = bookingService.getBookingStats();

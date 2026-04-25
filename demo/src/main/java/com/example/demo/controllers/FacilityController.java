@@ -134,3 +134,4 @@ public class FacilityController {
         }
     }
 }
+// Note: The above code assumes that the FacilityService methods throw RuntimeExceptions with appropriate messages when something goes wrong (e.g., facility not found, validation errors). In a production application, you might want to implement more specific exception handling and return more detailed error responses.
