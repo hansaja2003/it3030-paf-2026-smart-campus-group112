@@ -53,7 +53,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/pending")
+    @GetMapping("/pending")//get pending bookings for manager/admin
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> getPendingBookings() {
         List<Booking> bookings = bookingService.getPendingBookings();
