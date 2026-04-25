@@ -89,7 +89,7 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{id}/cancel")
+    @PutMapping("/{id}/cancel")//cancel booking
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<?> cancelBooking(@PathVariable Long id, Authentication auth) {
         try {
