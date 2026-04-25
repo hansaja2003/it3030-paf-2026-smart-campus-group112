@@ -7,6 +7,7 @@ import RoleRoute from "./routes/RoleRoute";
 
 import Home from "./pages/public/Home";
 import Login from "./pages/public/Login";
+import Signup from "./pages/public/Signup";
 import Facilities from "./pages/public/Facilities";
 import Contact from "./pages/public/Contact";
 import SystemUsers from "./pages/admin/SystemUsers";
@@ -51,6 +52,8 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signin" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="/oauth-success" element={<OAuthCallback />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/facilities" element={<Facilities />} />
