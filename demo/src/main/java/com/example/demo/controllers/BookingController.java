@@ -60,7 +60,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @PutMapping("/{id}/approve")
+    @PutMapping("/{id}/approve")//approve booking
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> approveBooking(@PathVariable Long id) {
         try {
