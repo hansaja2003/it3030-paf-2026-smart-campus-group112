@@ -138,7 +138,7 @@ public class BookingController {
         ));
     }
 
-    @GetMapping("/all")
+    @GetMapping("/all")//get all bookings for admin
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllBookings() {
         List<Booking> bookings = bookingService.getAllBookings();
