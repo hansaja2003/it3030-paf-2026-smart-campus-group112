@@ -3,6 +3,10 @@ import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import { useAuth } from "../../context/AuthContext";
 
+/**
+ * HELPER FUNCTIONS, These functions handle data formatting and fallbacks to keep the component clean.
+ */
+
 const formatRole = (role = "") => {
   const value = role.toUpperCase();
 
@@ -22,8 +26,11 @@ const formatRole = (role = "") => {
   }
 };
 
+// Generates a dynamic title based on the user's campus role
+
 const getProfileTitle = (role = "") => {
   const value = role.toUpperCase();
+
 
   switch (value) {
     case "STUDENT":
@@ -41,6 +48,7 @@ const getProfileTitle = (role = "") => {
   }
 };
 
+// Safely extracts a display name from various potential object keys in the user object
 const getDisplayName = (user) => {
   return (
     user?.name ||
