@@ -74,7 +74,7 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{id}/reject")
+    @PutMapping("/{id}/reject")//reject booking
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> rejectBooking(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
