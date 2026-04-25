@@ -45,7 +45,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/my")
+    @GetMapping("/my")//get my bookings
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER')")
     public ResponseEntity<?> getMyBookings(Authentication auth) {
         User user = getUserFromAuth(auth);
