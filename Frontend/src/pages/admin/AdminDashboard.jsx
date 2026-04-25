@@ -5,11 +5,19 @@ import Footer from "../../components/layout/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { bookingAPI, facilityAPI, ticketAPI } from "../../services/api";
 
+/**
+ * Utility: Ensures a value is a valid finite number.
+ * Defaults to 0 if parsing fails.
+ */
 const getSafeCount = (value) => {
   const num = Number(value);
   return Number.isFinite(num) ? num : 0;
 };
 
+/**
+ * Utility: Attempts to find a numeric value across multiple potential keys
+ * in an API response object. Useful for handling inconsistent backend naming.
+ */
 const pickFirstNumber = (obj, keys) => {
   for (const key of keys) {
     if (obj && obj[key] !== undefined && obj[key] !== null) {
@@ -19,6 +27,9 @@ const pickFirstNumber = (obj, keys) => {
   return 0;
 };
 
+/**
+ * UI Component: Displays a metric with an icon and optional styling.
+ */
 const StatCard = ({
   title,
   value,
@@ -33,7 +44,6 @@ const StatCard = ({
         <h3 className={`mt-2 text-3xl font-extrabold ${valueClass}`}>{value}</h3>
         <p className="mt-2 text-sm text-slate-500">{subtitle}</p>
       </div>
-
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-yellow-100 text-2xl">
         {icon}
       </div>
@@ -41,15 +51,16 @@ const StatCard = ({
   </div>
 );
 
+/**
+ * UI Component: A clickable card for primary dashboard actions.
+ */
 const ActionCard = ({ title, description, icon, buttonLabel, onClick }) => (
   <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-lg">
     <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-yellow-100 text-2xl">
       {icon}
     </div>
-
     <h3 className="text-xl font-extrabold text-slate-900">{title}</h3>
     <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
-
     <button
       onClick={onClick}
       className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-black"
@@ -59,6 +70,9 @@ const ActionCard = ({ title, description, icon, buttonLabel, onClick }) => (
   </div>
 );
 
+/**
+ * UI Component: Displays a permission or feature item with a checkmark.
+ */
 const PermissionItem = ({ text }) => (
   <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
     <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-sm">
@@ -68,6 +82,9 @@ const PermissionItem = ({ text }) => (
   </div>
 );
 
+/**
+ * UI Component: Provides a textual overview of system modules.
+ */
 const OverviewCard = ({ title, text, badge }) => (
   <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-slate-200">
     <div className="flex items-start justify-between gap-3">
@@ -83,14 +100,17 @@ const OverviewCard = ({ title, text, badge }) => (
 );
 
 const AdminDashboard = () => {
+  // --- Initialization & Context ---
   const { isAdmin, isManager, user } = useAuth();
   const navigate = useNavigate();
 
+  // --- Local State Management ---
   const [loadingStats, setLoadingStats] = useState(true);
   const [ticketStats, setTicketStats] = useState({});
   const [bookingStats, setBookingStats] = useState({});
   const [facilityCount, setFacilityCount] = useState(0);
 
+  // Dynamic naming based on user object structure
   const displayName =
     user?.name ||
     user?.fullName ||
@@ -101,6 +121,10 @@ const AdminDashboard = () => {
   const roleLabel = isAdmin ? "Admin" : "Manager";
   const profilePath = isAdmin ? "/admin/profile" : "/manager/profile";
 
+  /**
+   * Effect: Fetch all dashboard metrics on component mount.
+   * Uses Promise.all for parallel execution to improve performance.
+   */
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -116,6 +140,7 @@ const AdminDashboard = () => {
         setTicketStats(ticketStatsRes || {});
         setBookingStats(bookingStatsRes || {});
 
+        // Handle various potential structures of facility list responses
         const facilitiesArray = Array.isArray(facilitiesRes)
           ? facilitiesRes
           : Array.isArray(facilitiesRes?.content)
@@ -133,11 +158,19 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  /**
+   * Memoized Calculations: Derived stats to avoid unnecessary 
+   * recalculations on every render.
+   */
   const derivedStats = useMemo(() => {
     const totalTickets = pickFirstNumber(ticketStats, ["totalTickets", "total"]);
+    
+    // Combine open and in-progress for "Active" status
     const openTickets =
       pickFirstNumber(ticketStats, ["open"]) +
       pickFirstNumber(ticketStats, ["inProgress"]);
+    
+    // Combine resolved and closed for "Completed" status
     const resolvedTickets =
       pickFirstNumber(ticketStats, ["resolved"]) +
       pickFirstNumber(ticketStats, ["closed"]);
@@ -167,16 +200,15 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
 
+      {/* --- Hero Section: Welcome & Actions --- */}
       <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white">
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-yellow-400">
             Management Portal
           </p>
-
           <h1 className="text-4xl font-extrabold md:text-5xl">
             Welcome, {displayName}
           </h1>
-
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
             Monitor campus operations, review service activity, and manage internal
             workflows through the {roleLabel.toLowerCase()} dashboard.
@@ -189,14 +221,12 @@ const AdminDashboard = () => {
             >
               View My Profile
             </button>
-
             <button
               onClick={() => navigate("/facilities")}
               className="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
             >
               Open Facility Directory
             </button>
-
             <button
               onClick={() => navigate("/qr-check-in-center")}
               className="rounded-xl border border-yellow-400/40 bg-yellow-500/10 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-500/20"
@@ -207,6 +237,7 @@ const AdminDashboard = () => {
         </div>
       </section>
 
+      {/* --- Statistics Overview Grid --- */}
       <section className="mx-auto -mt-8 grid max-w-7xl gap-5 px-6 sm:grid-cols-2 xl:grid-cols-5 lg:px-10">
         <StatCard
           title="Total Tickets"
@@ -242,8 +273,11 @@ const AdminDashboard = () => {
         />
       </section>
 
+      {/* --- Main Dashboard Content --- */}
       <section className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
         <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">
+          
+          {/* Left Column: Quick Access Actions */}
           <div>
             <div className="mb-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-600">
@@ -265,7 +299,6 @@ const AdminDashboard = () => {
                 buttonLabel="Open Facilities"
                 onClick={() => navigate("/facilities")}
               />
-
               <ActionCard
                 title="My Profile"
                 description="Review your account information and role-based access from your profile page."
@@ -273,7 +306,6 @@ const AdminDashboard = () => {
                 buttonLabel="Open Profile"
                 onClick={() => navigate(profilePath)}
               />
-
               <ActionCard
                 title="QR Check-In Center"
                 description="Verify approved facility bookings through QR scanning or token entry and complete user check-in."
@@ -281,13 +313,11 @@ const AdminDashboard = () => {
                 buttonLabel="Open Check-In"
                 onClick={() => navigate("/qr-check-in-center")}
               />
-
               <OverviewCard
                 title="Booking Operations"
                 text="Booking review, approval, rejection, and QR-based booking check-in are available through the management workflow."
                 badge="Core flow"
               />
-
               <OverviewCard
                 title="Ticket Operations"
                 text="Ticket monitoring, technician assignment, and issue handling are part of the management workflow."
@@ -296,6 +326,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Right Column: Permission Details & Status */}
           <div className="space-y-6">
             <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-slate-200">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-600">
@@ -304,7 +335,6 @@ const AdminDashboard = () => {
               <h3 className="mt-2 text-2xl font-extrabold text-slate-900">
                 {isAdmin ? "Administrator Permissions" : "Manager Permissions"}
               </h3>
-
               <div className="mt-5 space-y-3">
                 <PermissionItem text="Approve or reject booking requests." />
                 <PermissionItem text="Review ticket activity and assign technicians." />
@@ -319,11 +349,11 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* Current Real-time Status Card */}
             <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-slate-200">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-600">
                 Current Status
               </p>
-
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -333,7 +363,6 @@ const AdminDashboard = () => {
                     {loadingStats ? "..." : derivedStats.pendingBookings}
                   </p>
                 </div>
-
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Role
@@ -343,7 +372,6 @@ const AdminDashboard = () => {
                   </p>
                 </div>
               </div>
-
               <button
                 onClick={() => navigate("/qr-check-in-center")}
                 className="mt-5 w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-black"
@@ -352,6 +380,7 @@ const AdminDashboard = () => {
               </button>
             </div>
           </div>
+
         </div>
       </section>
 
