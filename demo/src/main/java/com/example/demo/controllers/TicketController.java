@@ -16,6 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST Controller for managing Support Tickets in the Smart Campus System.
+ * Handles the ticket lifecycle including creation, assignment, status tracking, and reporting.
+ */
+
 @RestController
 @RequestMapping("/api/tickets")
 @RequiredArgsConstructor
@@ -70,6 +75,7 @@ public class TicketController {
     }
 
     // Get my tickets (STUDENT, LECTURER)
+    
     @GetMapping("/my")
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER')")
     public ResponseEntity<?> getMyTickets(Authentication auth) {
@@ -79,6 +85,9 @@ public class TicketController {
     }
 
     // Get all tickets (ADMIN)
+
+     //Retrieve all tickets in the system. Accessible by: ADMIN
+
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllTickets() {
