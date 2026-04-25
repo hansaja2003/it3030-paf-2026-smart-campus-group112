@@ -145,7 +145,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/stats")
+    @GetMapping("/stats")//get booking statistics for manager/admin
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<?> getBookingStats() {
         Map<String, Object> stats = bookingService.getBookingStats();
