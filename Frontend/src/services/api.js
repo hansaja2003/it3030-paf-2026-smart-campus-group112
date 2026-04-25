@@ -54,7 +54,9 @@ const apiRequest = async (
     headers["Content-Type"] = "application/json";
   }
 
-  if (token) {
+  const isAuthEndpoint = endpoint.startsWith("/auth/");
+
+  if (token && !isAuthEndpoint) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
@@ -96,9 +98,18 @@ export const getDashboardPathByRole = (role) => {
 };
 
 export const authAPI = {
-  googleLogin: () => {
-    window.location.href = `${BACKEND_URL}/oauth2/authorization/google`;
+  googleLogin: (mode = "signin") => {
+    const params = new URLSearchParams({
+      prompt: "select_account",
+      ui_hint: mode,
+    });
+
+    window.location.href = `${BACKEND_URL}/oauth2/authorization/google?${params.toString()}`;
   },
+
+  loginWithEmail: (payload) => apiRequest("/auth/login", "POST", payload),
+
+  registerWithEmail: (payload) => apiRequest("/auth/register", "POST", payload),
 
   handleOAuthCallback: (search = window.location.search) => {
     const params = new URLSearchParams(search);
@@ -219,4 +230,5 @@ export const notificationAPI = {
 
 export const userAPI = {
   getAll: () => apiRequest("/user/all"),
+  updateRole: (id, role) => apiRequest(`/user/${id}/role`, "PUT", { role }),
 };

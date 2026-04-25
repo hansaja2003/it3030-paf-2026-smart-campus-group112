@@ -36,17 +36,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = authHeader.substring(7);
-        String email = jwtService.extractUsername(jwt);
+        try {
+            String email = jwtService.extractUsername(jwt);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            var user = userRepository.findByEmail(email).orElse(null);
+                var user = userRepository.findByEmail(email).orElse(null);
 
-            if (user != null && jwtService.isTokenValid(jwt, user)) {
-                // ✅ Pass the user object to assign the correct role
-                var authToken = jwtService.getAuthentication(jwt, user);
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (user != null && jwtService.isTokenValid(jwt, user)) {
+                    // ✅ Pass the user object to assign the correct role
+                    var authToken = jwtService.getAuthentication(jwt, user);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception ignored) {
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
