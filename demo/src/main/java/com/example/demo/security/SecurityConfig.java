@@ -6,6 +6,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,6 +29,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oauthService;
     private final OAuth2SuccessHandler successHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final GoogleOAuth2AuthorizationRequestResolver googleAuthorizationRequestResolver;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,10 +38,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/error", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/error", "/favicon.ico", "/login/**", "/oauth2/**", "/api/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestResolver(googleAuthorizationRequestResolver)
+                )
                 .userInfoEndpoint(user -> user.userService(oauthService))
                 .successHandler(successHandler)
             )
@@ -64,5 +70,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -27,6 +27,7 @@ public class User {
 
     private String name;
     private String email;
+    private String password;
     private String role;        // USER / ADMIN
     private String provider;    // GOOGLE
     private String providerId;  // Google unique ID

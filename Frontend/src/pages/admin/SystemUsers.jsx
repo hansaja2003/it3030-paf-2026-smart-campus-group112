@@ -35,6 +35,8 @@ const getProviderLabel = (provider = "") => {
   return String(provider).toUpperCase();
 };
 
+const ROLE_OPTIONS = ["ADMIN", "MANAGER", "TECHNICIAN", "LECTURER", "STUDENT"];
+
 const SummaryCard = ({ title, value, valueClass = "text-slate-900", icon }) => (
   <div className="rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200">
     <div className="flex items-start justify-between gap-4">
@@ -55,21 +57,73 @@ const SystemUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [draftRoles, setDraftRoles] = useState({});
+  const [updatingUserId, setUpdatingUserId] = useState(null);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError("");
+      setSuccess("");
       const response = await userAPI.getAll();
-      setUsers(normalizeArray(response));
+      const normalizedUsers = normalizeArray(response);
+      setUsers(normalizedUsers);
+      setDraftRoles(
+        normalizedUsers.reduce((acc, user) => {
+          acc[user.id] = String(user?.role || "STUDENT").toUpperCase();
+          return acc;
+        }, {})
+      );
     } catch (err) {
       setError(err.message || "Failed to load system users.");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleDraftRoleChange = (userId, role) => {
+    setDraftRoles((prev) => ({ ...prev, [userId]: role }));
+  };
+
+  const handleUpdateRole = async (userId) => {
+    const selectedRole = draftRoles[userId];
+    if (!selectedRole) return;
+
+    try {
+      setUpdatingUserId(userId);
+      setError("");
+      setSuccess("");
+
+      await userAPI.updateRole(userId, selectedRole);
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, role: selectedRole } : user
+        )
+      );
+
+      setSuccess("User role updated successfully.");
+      setToastMessage(`${selectedRole} role saved for ${users.find((user) => user.id === userId)?.name || "user"}.`);
+    } catch (err) {
+      setError(err.message || "Failed to update user role.");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!toastMessage) return;
+
+    const timer = setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -129,6 +183,12 @@ const SystemUsers = () => {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
 
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-black/10">
+          {toastMessage}
+        </div>
+      )}
+
       <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white">
         <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-yellow-400">
@@ -169,6 +229,12 @@ const SystemUsers = () => {
         {error && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            {success}
           </div>
         )}
 
@@ -245,6 +311,9 @@ const SystemUsers = () => {
                     <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
                       Provider
                     </th>
+                    <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
 
@@ -271,6 +340,30 @@ const SystemUsers = () => {
                       </td>
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {getProviderLabel(user.provider)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={draftRoles[user.id] || String(user.role || "STUDENT").toUpperCase()}
+                            onChange={(e) => handleDraftRoleChange(user.id, e.target.value)}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100"
+                          >
+                            {ROLE_OPTIONS.map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
+                          </select>
+
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateRole(user.id)}
+                            disabled={updatingUserId === user.id || draftRoles[user.id] === String(user.role || "").toUpperCase()}
+                            className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                          >
+                            {updatingUserId === user.id ? "Saving..." : "Update"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

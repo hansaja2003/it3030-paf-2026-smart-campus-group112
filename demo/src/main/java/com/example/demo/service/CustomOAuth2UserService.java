@@ -21,6 +21,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
     @Value("${admin.email}")
     private String adminEmail;
 
+    @Value("${student.email:}")
+    private String studentEmail;
+
+    @Value("${lecturer.email:}")
+    private String lecturerEmail;
+
+    @Value("${technician.email:}")
+    private String technicianEmail;
+
+    @Value("${manager.email:}")
+    private String managerEmail;
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
         OAuth2User oauthUser = super.loadUser(request);
@@ -29,48 +41,42 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         String name = oauthUser.getAttribute("name");
         String providerId = oauthUser.getAttribute("sub");
 
+        String resolvedRole = determineRole(email);
+
         userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    String role = determineRole(email);  //  FIXED: Call method
-                    return userRepository.save(
-                        User.builder()
-                                .name(name)
-                                .email(email)
-                                .role(role)  //  FIXED: Use determined role
-                                .provider("GOOGLE")
-                                .providerId(providerId)
-                                .build()
-                    );
-                });
+                .ifPresentOrElse(existingUser -> {
+                    existingUser.setName(name);
+                    existingUser.setProvider("GOOGLE");
+                    existingUser.setProviderId(providerId);
+                    existingUser.setRole(resolvedRole);
+                    userRepository.save(existingUser);
+                }, () -> userRepository.save(
+                    User.builder()
+                            .name(name)
+                            .email(email)
+                            .role(resolvedRole)
+                            .provider("GOOGLE")
+                            .providerId(providerId)
+                            .build()
+                ));
 
         return oauthUser;
     }
 
-    // NEW METHOD: Determine role based on email pattern
+    // Determine role from configured role emails in application.properties
     private String determineRole(String email) {
-    // ADMIN - your email
-    if (email.equals("")) {
-        return "ADMIN";
-    }
-    // STUDENT - use one of your other accounts
-    else if (email.equals("")) {
+        if (isSameEmail(email, adminEmail)) return "ADMIN";
+        if (isSameEmail(email, studentEmail)) return "STUDENT";
+        if (isSameEmail(email, lecturerEmail)) return "LECTURER";
+        if (isSameEmail(email, technicianEmail)) return "TECHNICIAN";
+        if (isSameEmail(email, managerEmail)) return "MANAGER";
         return "STUDENT";
     }
-    // LECTURER - use another account
-    else if (email.equals("")) {
-        return "LECTURER";
+
+    private boolean isSameEmail(String email, String configuredEmail) {
+        return configuredEmail != null
+                && !configuredEmail.isBlank()
+                && email != null
+                && email.equalsIgnoreCase(configuredEmail.trim());
     }
-    // TECHNICIAN - use another account
-    else if (email.equals("")) {
-        return "TECHNICIAN";
-    }
-    // MANAGER - use another account
-    else if (email.equals("")) {
-        return "MANAGER";
-    }
-    // Default
-    else {
-        return "STUDENT";
-    }
-}
 }

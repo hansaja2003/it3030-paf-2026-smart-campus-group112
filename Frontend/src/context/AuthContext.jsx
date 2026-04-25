@@ -27,6 +27,20 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const applySession = (result) => {
+    const sessionToken = result?.token || "";
+    const sessionRole = (result?.role || "").toUpperCase();
+
+    if (!sessionToken) return false;
+
+    localStorage.setItem("token", sessionToken);
+    localStorage.setItem("role", sessionRole);
+
+    setToken(sessionToken);
+    setRole(sessionRole);
+    return true;
+  };
+
   const fetchUserProfile = async () => {
     try {
       const profile = await authAPI.getProfile();
@@ -54,18 +68,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const login = () => {
-    authAPI.googleLogin();
+  const login = (mode = "signin") => {
+    authAPI.googleLogin(mode);
   };
 
   const handleOAuthCallback = (search = window.location.search) => {
     const result = authAPI.handleOAuthCallback(search);
+    return applySession(result);
+  };
 
-    if (!result) return false;
+  const loginWithEmail = async (email, password) => {
+    const result = await authAPI.loginWithEmail({ email, password });
+    return applySession(result);
+  };
 
-    setToken(result.token);
-    setRole(result.role);
-    return true;
+  const registerWithEmail = async ({ name, email, password }) => {
+    const result = await authAPI.registerWithEmail({ name, email, password });
+    return applySession(result);
   };
 
   const logout = () => {
@@ -89,6 +108,8 @@ export const AuthProvider = ({ children }) => {
       isStudent: role === "STUDENT",
       dashboardPath,
       login,
+      loginWithEmail,
+      registerWithEmail,
       logout,
       handleOAuthCallback,
       refreshProfile: fetchUserProfile,

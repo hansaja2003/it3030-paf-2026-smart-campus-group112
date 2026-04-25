@@ -454,12 +454,29 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="rounded-full bg-yellow-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-yellow-600"
-            >
-              Login
-            </Link>
+            <>
+              <Link
+                to="/login"
+                className={`rounded-full border px-5 py-3 text-sm font-semibold transition shadow-sm ${
+                  location.pathname === "/login" || location.pathname === "/signin"
+                    ? "bg-yellow-500 text-white border-yellow-500"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-yellow-400 hover:text-yellow-700"
+                }`}
+              >
+                Sign In
+              </Link>
+
+              <Link
+                to="/signup"
+                className={`rounded-full px-6 py-3 text-sm font-semibold shadow transition ${
+                  location.pathname === "/signup"
+                    ? "bg-yellow-500 text-white"
+                    : "border border-slate-300 bg-white text-slate-700 hover:border-yellow-400 hover:text-yellow-700"
+                }`}
+              >
+                Sign Up
+              </Link>
+            </>
           )}
         </div>
 
@@ -536,13 +553,31 @@ const Navbar = () => {
                 </button>
               </div>
             ) : (
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className="block w-full rounded-xl bg-yellow-500 px-4 py-3 text-center text-sm font-semibold text-white"
-              >
-                Login
-              </Link>
+              <div className="space-y-3">
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className={`block w-full rounded-xl border px-4 py-3 text-center text-sm font-semibold transition ${
+                    location.pathname === "/login" || location.pathname === "/signin"
+                      ? "bg-yellow-500 text-white border-yellow-500"
+                      : "border-slate-300 bg-white text-slate-700"
+                  }`}
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className={`block w-full rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
+                    location.pathname === "/signup"
+                      ? "bg-yellow-500 text-white"
+                      : "border border-slate-300 bg-white text-slate-700"
+                  }`}
+                >
+                  Sign Up
+                </Link>
+              </div>
             )}
           </div>
         </div>
