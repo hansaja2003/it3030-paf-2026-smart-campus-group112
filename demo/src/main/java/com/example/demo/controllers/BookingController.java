@@ -118,7 +118,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/check-availability")
+    @GetMapping("/check-availability")//check availability for a facility
     @PreAuthorize("hasAnyRole('STUDENT', 'LECTURER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<?> checkAvailability(
             @RequestParam Long facilityId,
