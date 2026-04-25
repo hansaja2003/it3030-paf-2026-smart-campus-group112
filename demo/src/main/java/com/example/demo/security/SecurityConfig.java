@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oauthService;
     private final OAuth2SuccessHandler successHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final GoogleOAuth2AuthorizationRequestResolver googleAuthorizationRequestResolver;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,10 +38,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/error", "/oauth2/**", "/api/auth/**").permitAll()
+                .requestMatchers("/", "/error", "/favicon.ico", "/login/**", "/oauth2/**", "/api/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestResolver(googleAuthorizationRequestResolver)
+                )
                 .userInfoEndpoint(user -> user.userService(oauthService))
                 .successHandler(successHandler)
             )
