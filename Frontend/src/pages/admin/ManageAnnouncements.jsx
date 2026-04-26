@@ -4,7 +4,7 @@ import Footer from "../../components/layout/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { announcementAPI } from "../../services/api";
 
-const roleOptions = ["ALL", "STUDENT", "LECTURER", "TECHNICIAN", "MANAGER", "ADMIN"];
+const roleOptions = ["ALL", "STUDENT", "TECHNICIAN", "ADMIN"];
 const priorityOptions = ["NORMAL", "IMPORTANT"];
 
 const normalizeArray = (data) => {

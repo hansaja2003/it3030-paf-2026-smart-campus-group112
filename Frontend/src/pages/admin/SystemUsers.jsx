@@ -35,7 +35,7 @@ const getProviderLabel = (provider = "") => {
   return String(provider).toUpperCase();
 };
 
-const ROLE_OPTIONS = ["ADMIN", "MANAGER", "TECHNICIAN", "LECTURER", "STUDENT"];
+const ROLE_OPTIONS = ["ADMIN", "TECHNICIAN", "STUDENT"];
 
 const SummaryCard = ({ title, value, valueClass = "text-slate-900", icon }) => (
   <div className="rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200">
@@ -264,9 +264,7 @@ const SystemUsers = () => {
               >
                 <option value="ALL">All</option>
                 <option value="ADMIN">Admin</option>
-                <option value="MANAGER">Manager</option>
                 <option value="TECHNICIAN">Technician</option>
-                <option value="LECTURER">Lecturer</option>
                 <option value="STUDENT">Student</option>
               </select>
             </div>
